@@ -14,7 +14,7 @@ Given the following function...
         return "Rory";
     }
 
- * Place your cater on the 'return' keyword.
+ * Place your cater on the '**return**' keyword.
  * Invoke '**Correct Return Type**'.
 
 CodeRush will alter your function to read..
