@@ -48,9 +48,9 @@ namespace CR_CorrectReturnType
 
             var Return = (Return)ea.Element;
 
-            var ExpressionType = CodeRush.Refactoring.GetExpressionTypeFromContext(Return.Expression);
+            var ExpressionType = Return.Expression.Resolve(ParserServices.SourceTreeResolver);
 
-            if (Return.Expression.ExpressionTypeName == Parent.MemberType)
+            if (ExpressionType.Name == Parent.MemberType)
                 return;
             ea.Available = true;  
         }
@@ -61,8 +61,8 @@ namespace CR_CorrectReturnType
             var methodTypeReference = method.MemberTypeReference;
             var Return = (Return)ea.Element;
 
-            var expressionType = CodeRush.Refactoring.GetExpressionTypeFromContext(Return.Expression, true);
-            var simpleName = CodeRush.Language.GetSimpleTypeName(expressionType);
+            var expressionType = Return.Expression.Resolve(ParserServices.SourceTreeResolver);
+            var simpleName = CodeRush.Language.GetSimpleTypeName(expressionType.FullName);
 
             var Code = CodeRush.CodeMod.GenerateCode(new TypeReferenceExpression(simpleName), true);
             ea.TextDocument.SetText(methodTypeReference.Range, Code);
