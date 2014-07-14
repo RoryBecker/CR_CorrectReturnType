@@ -33,9 +33,11 @@ namespace CR_CorrectReturnType
             CorrectReturnType.ProviderName = "CorrectReturnType"; // Should be Unique
             CorrectReturnType.DisplayName = "Correct Return Type";
             CorrectReturnType.CheckAvailability += CorrectReturnType_CheckAvailability;
+            CorrectReturnType.PreparePreview += CorrectReturnType_PreparePreview;
             CorrectReturnType.Apply += CorrectReturnType_Apply;
             ((System.ComponentModel.ISupportInitialize)(CorrectReturnType)).EndInit();
         }
+
         private void CorrectReturnType_CheckAvailability(Object sender, CheckContentAvailabilityEventArgs ea)
         {
             if (ea.Element.ElementType != LanguageElementType.Return)
@@ -54,21 +56,44 @@ namespace CR_CorrectReturnType
                 return;
             ea.Available = true;  
         }
+        private void CorrectReturnType_PreparePreview(object sender, PrepareContentPreviewEventArgs ea)
+        {
+            Method method = ea.Element.GetParentMethod();
+            SourceRange OldTypeRange = GetMethodReturnTypeRange(method);
+            ea.AddStrikethrough(OldTypeRange);
 
+            var Return = (Return)ea.Element;
+            string Code = GetExpressionTypeCode(Return.Expression);
+
+            ea.AddCodePreview(OldTypeRange.Start, Code);
+        }
         private void CorrectReturnType_Apply(Object sender, ApplyContentEventArgs ea)
         {
             Method method = ea.Element.GetParentMethod();
-            var methodTypeReference = method.MemberTypeReference;
+            SourceRange TypeRange = GetMethodReturnTypeRange(method);
             var Return = (Return)ea.Element;
 
-            var expressionType = Return.Expression.Resolve(ParserServices.SourceTreeResolver);
-            var simpleName = CodeRush.Language.GetSimpleTypeName(expressionType.FullName);
-
-            var Code = CodeRush.CodeMod.GenerateCode(new TypeReferenceExpression(simpleName), true);
-            ea.TextDocument.SetText(methodTypeReference.Range, Code);
+            string Code = GetExpressionTypeCode(Return.Expression);
+            ea.TextDocument.SetText(TypeRange, Code);
 
         }
-        
-        
+
+        private static string GetExpressionTypeCode(Expression Expression)
+        {
+            var resolvedElement = Expression.Resolve(ParserServices.SourceTreeResolver);
+            ITypeReferenceExpression typeRef = resolvedElement as ITypeReferenceExpression;
+            var simpleName = CodeRush.Language.GetSimpleTypeName(resolvedElement.FullName);
+
+            var Code = CodeRush.CodeMod.GenerateCode(SourceModelUtils.CreateTypeReferenceExpression(resolvedElement));
+            
+            //var Code = CodeRush.CodeMod.GenerateCode(new TypeReferenceExpression(simpleName), true);
+            return CodeRush.Language.GetSimpleTypeName(Code);
+        }
+        private static SourceRange GetMethodReturnTypeRange(Method method)
+        {
+            var methodTypeReference = method.MemberTypeReference;
+            SourceRange TypeRange = methodTypeReference.Range;
+            return TypeRange;
+        }
     }
 }
