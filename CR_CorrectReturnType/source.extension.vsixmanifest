@@ -3,7 +3,7 @@
     <Identifier Id="CR_CorrectReturnType">
         <Name>CorrectReturnType for CodeRush</Name>
         <Author>Rory Becker</Author>
-        <Version>1.1.0.0</Version>
+        <Version>1.2.0.0</Version>
         <Description xml:space="preserve">Corrects the return type of a function based on the 'return' statement at the caret.</Description>
         <Locale>1033</Locale>
         <Icon>CR-Plug-in.png</Icon>
